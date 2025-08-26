@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ClosedXML.Excel;
 
 namespace Zbozi
 {
@@ -31,6 +32,10 @@ namespace Zbozi
         {
             tabulka.SuspendLayout();
 
+            // Add row number column first
+            tabulka.Columns.Add("cisloradku", "Číslo řádku");
+
+            // Add the rest of the columns from the worksheet
             for (int col = 1; col <= Form1.programConfig.stranka.LastColumnUsed().ColumnNumber(); col++)
             {
                 string zahlavi = Form1.programConfig.stranka.Cell(1, col).Value.ToString();
@@ -41,6 +46,11 @@ namespace Zbozi
             {
                 var radek = Form1.programConfig.stranka.Row(radekKZobrazeni);
                 var gridRadek = new DataGridViewRow();
+
+                var bunkaCIsloRadku = new DataGridViewTextBoxCell();
+                bunkaCIsloRadku.Value = radekKZobrazeni;
+                gridRadek.Cells.Add(bunkaCIsloRadku);
+
 
                 for (int col = 1; col <= Form1.programConfig.stranka.LastColumnUsed().ColumnNumber(); col++)
                 {
@@ -64,6 +74,44 @@ namespace Zbozi
         private void ok_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void ulozit_Click(object sender, EventArgs e)
+        {
+            DataTable dt = new DataTable();
+            foreach (DataGridViewColumn sloupec in tabulka.Columns)
+            {
+                dt.Columns.Add(sloupec.HeaderText);
+            }
+            foreach (DataGridViewRow radek in tabulka.Rows)
+            {
+                DataRow dr = dt.NewRow();
+                for (int i = 0; i < tabulka.Columns.Count; i++)
+                {
+                    dr[i] = radek.Cells[i].Value;
+                }
+                dt.Rows.Add(dr);
+            }
+
+            using (SaveFileDialog sfd = new SaveFileDialog() { Filter = "Excel|*.xlsx" })
+            {
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        using (XLWorkbook wb = new XLWorkbook())
+                        {
+                            wb.Worksheets.Add(dt, "Export");
+                            wb.SaveAs(sfd.FileName);
+                        }
+                        MessageBox.Show("Soubor byl úspěšně uložen.", "Uloženo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Při ukládání souboru došlo k chybě:\n" + ex.Message, "Chyba", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
         }
     }
 }

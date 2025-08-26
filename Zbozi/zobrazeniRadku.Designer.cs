@@ -30,6 +30,7 @@
         {
             tabulka = new DataGridView();
             ok = new Button();
+            ulozit = new Button();
             ((System.ComponentModel.ISupportInitialize)tabulka).BeginInit();
             SuspendLayout();
             // 
@@ -58,11 +59,23 @@
             ok.UseVisualStyleBackColor = true;
             ok.Click += ok_Click;
             // 
+            // ulozit
+            // 
+            ulozit.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            ulozit.Location = new Point(546, 126);
+            ulozit.Name = "ulozit";
+            ulozit.Size = new Size(64, 23);
+            ulozit.TabIndex = 1;
+            ulozit.Text = "Uložit...";
+            ulozit.UseVisualStyleBackColor = true;
+            ulozit.Click += ulozit_Click;
+            // 
             // zobrazeniRadku
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(684, 161);
+            Controls.Add(ulozit);
             Controls.Add(ok);
             Controls.Add(tabulka);
             MinimumSize = new Size(700, 200);
@@ -77,5 +90,6 @@
 
         private DataGridView tabulka;
         private Button ok;
+        private Button ulozit;
     }
 }

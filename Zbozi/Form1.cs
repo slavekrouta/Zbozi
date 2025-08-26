@@ -2,6 +2,7 @@ using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Drawing;
 using DocumentFormat.OpenXml.Office2013.Drawing.ChartStyle;
 using DocumentFormat.OpenXml.Office2021.Excel.RichDataWebImage;
+using DocumentFormat.OpenXml.Packaging;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
@@ -47,25 +48,39 @@ namespace Zbozi
                 sesit?.Dispose();
                 sesit = null;
                 stranka = null;
-                Firmy.Clear();
-                radkyFirem.Clear();
-                popiskyZbozi.Clear();
-                radkyPopisku.Clear();
+                data.Clear();
+                radky.Clear();
                 souborVybran = false;
                 souborNacteny = false;
                 souborPath = string.Empty;
-                objednaciCisla.Clear();
-                radkyObjednacichCisel.Clear();
+                vyskladneno = 0;
+                radkyPocet = 0;
             }
 
-            public static HashSet<string> Firmy = new HashSet<string>();
-            public static Dictionary<string, List<int>> radkyFirem = new Dictionary<string, List<int>>();
-            public static HashSet<string> popiskyZbozi = new HashSet<string>();
-            public static Dictionary<string, List<int>> radkyPopisku = new Dictionary<string, List<int>>();
-            public static HashSet<string> objednaciCisla = new HashSet<string>();
-            public static Dictionary<string, List<int>> radkyObjednacichCisel = new Dictionary<string, List<int>>();
+            //public static HashSet<string> Firmy = new HashSet<string>();
+            //public static Dictionary<string, HashSet<int>> radkyFirem = new Dictionary<string, HashSet<int>>();
+            //public static HashSet<string> popiskyZbozi = new HashSet<string>();
+            //public static Dictionary<string, HashSet<int>> radkyPopisku = new Dictionary<string, HashSet<int>>();
+            //public static HashSet<string> objednaciCisla = new HashSet<string>();
+            //public static Dictionary<string, HashSet<int>> radkyObjednacichCisel = new Dictionary<string, HashSet<int>>();
+            public static Dictionary<string, HashSet<string>> data = new Dictionary<string, HashSet<string>>()
+            {
+                { "Firmy", new HashSet<string>() },
+                { "Zboží", new HashSet<string>() },
+                { "Objednací èísla", new HashSet<string>() },
+                { "Filtrovaná", new HashSet<string>() }
+            };
+            public static Dictionary<string, Dictionary<string, HashSet<int>>> radky = new Dictionary<string, Dictionary<string, HashSet<int>>>()
+            {
+                { "Firmy", new Dictionary<string, HashSet<int>>() },
+                { "Zboží", new Dictionary<string, HashSet<int>>() },
+                { "Objednací èísla", new Dictionary<string, HashSet<int>>() },
+                { "Filtrovaná", new Dictionary<string, HashSet<int>>() }
+            };
             public static bool souborVybran = false;
             public static bool souborNacteny = false;
+            public static int vyskladneno = 0;
+            public static int radkyPocet = 0;
         }
         private void clickVybratSoubor(object sender, EventArgs e)
         {
@@ -76,10 +91,11 @@ namespace Zbozi
                 {
                     programConfig.Dispose();
                     labelSoubor.Text = "Soubor Nevybrán";
-                    textVyhledavac.Enabled = false;
-                    textVyhledavac.Text = string.Empty;
+                    textVyhledavacLevy.Enabled = false;
+                    textVyhledavacLevy.Text = string.Empty;
                     buttonZobrazit.Enabled = false;
-                    listVeci.Items.Clear();
+                    listVeciLevy.Items.Clear();
+                    listVeciPravy.Items.Clear();
                     listRadky.Items.Clear();
                     vybratSoubor();
                 }
@@ -119,21 +135,21 @@ namespace Zbozi
                     {
                         return;
                     }
-                        //if (programConfig.souborVybran && programConfig.souborNacteny)
-                        //{
-                        //    labelSoubor.Text = "Soubor Nevybrán";
-                        //    programConfig.Dispose();
-                        //}
-                        //else if (programConfig.souborNacteny)
-                        //{
-                        //    labelSoubor.Text = programConfig.souborName + " (Naèteno)";
-                        //}
-                        //else
-                        //{
-                        //    labelSoubor.Text = programConfig.souborName + " (Vybráno)";
-                        //} IDK co tohle mìlo dìlat, ale vypadá to, že to bylo zbyteèný. Spouštìlo se to když uživatel vybral Ne
+                    //if (programConfig.souborVybran && programConfig.souborNacteny)
+                    //{
+                    //    labelSoubor.Text = "Soubor Nevybrán";
+                    //    programConfig.Dispose();
+                    //}
+                    //else if (programConfig.souborNacteny)
+                    //{
+                    //    labelSoubor.Text = programConfig.souborName + " (Naèteno)";
+                    //}
+                    //else
+                    //{
+                    //    labelSoubor.Text = programConfig.souborName + " (Vybráno)";
+                    //} IDK co tohle mìlo dìlat, ale vypadá to, že to bylo zbyteèný. Spouštìlo se to když uživatel vybral Ne
                 }
-                
+
                 programConfig.souborPath = dialogVybratSoubor.FileName;
                 programConfig.souborVybran = true;
                 labelSoubor.Text = programConfig.souborName + " (Vybráno)";
@@ -168,7 +184,7 @@ namespace Zbozi
 
                     int posledniRadekCislo = programConfig.stranka.Column(1).LastCellUsed().Address.RowNumber;
                     int nacteno = 0;
-                    
+
                     for (int i = 2; i <= posledniRadekCislo; i++)
                     {
                         if (string.IsNullOrEmpty(programConfig.stranka.Cell(i, 1).Value.ToString().Trim()) || string.IsNullOrEmpty(programConfig.stranka.Cell(i, 2).Value.ToString().Trim()))
@@ -178,27 +194,28 @@ namespace Zbozi
                                 MessageBox.Show("Na øádku " + i + " je prázdná buòka. Øádek pøeskakuji.", "Prázdná buòka");
                             });
                         }
-                        else
+                        else if (string.IsNullOrEmpty(programConfig.stranka.Cell(i, 15).Value.ToString().Trim()))
                         {
+                            programConfig.radkyPocet++;
                             string firma = programConfig.stranka.Cell(i, 2).GetString().Trim().ToUpper();
-                            lock (programConfig.Firmy)
+                            lock (programConfig.data["Firmy"])
                             {
-                                if (programConfig.Firmy.Add(firma)) programConfig.radkyFirem[firma] = new List<int>();
-                                programConfig.radkyFirem[firma].Add(i);
+                                if (programConfig.data["Firmy"].Add(firma)) programConfig.radky["Firmy"][firma] = new HashSet<int>();
+                                programConfig.radky["Firmy"][firma].Add(i);
                             }
 
                             string objednaciCislo = programConfig.stranka.Cell(i, 4).GetString().Trim();
-                            lock (programConfig.objednaciCisla)
+                            lock (programConfig.data["Objednací èísla"])
                             {
-                                if (programConfig.objednaciCisla.Add(objednaciCislo)) programConfig.radkyObjednacichCisel[objednaciCislo] = new List<int>();
-                                programConfig.radkyObjednacichCisel[objednaciCislo].Add(i);
+                                if (programConfig.data["Objednací èísla"].Add(objednaciCislo)) programConfig.radky["Objednací èísla"][objednaciCislo] = new HashSet<int>();
+                                programConfig.radky["Objednací èísla"][objednaciCislo].Add(i);
                             }
 
                             string popisek = programConfig.stranka.Cell(i, 5).GetString().Trim();
-                            lock (programConfig.popiskyZbozi)
+                            lock (programConfig.data["Zboží"])
                             {
-                                if (programConfig.popiskyZbozi.Add(popisek)) programConfig.radkyPopisku[popisek] = new List<int>();
-                                programConfig.radkyPopisku[popisek].Add(i);
+                                if (programConfig.data["Zboží"].Add(popisek)) programConfig.radky["Zboží"][popisek] = new HashSet<int>();
+                                programConfig.radky["Zboží"][popisek].Add(i);
                             }
 
                             nacteno++;
@@ -208,6 +225,7 @@ namespace Zbozi
                                 Invoke(() => radekNacitani.Value = pokrok);
                             }
                         }
+                        else programConfig.vyskladneno++;
                     }
 
                     programConfig.souborNacteny = true;
@@ -236,16 +254,23 @@ namespace Zbozi
             buttonSoubor.Text = "Vybrat Soubor";
             buttonSoubor.Click -= clickNacistData;
             buttonSoubor.Click += clickVybratSoubor;
-            listVeci.Items.Clear();
+            listVeciLevy.Items.Clear();
             listRadky.Items.Clear();
             radekNacitani.Visible = false;
 
             if (programConfig.souborNacteny)
             {
-                programConfig.Firmy = new HashSet<string>(programConfig.Firmy.OrderBy(f => f));
+                programConfig.data["Firmy"] = new HashSet<string>(programConfig.data["Firmy"].OrderBy(f => f));
                 labelSoubor.Text = programConfig.souborName + " (Naèteno)";
-                textVyhledavac.Enabled = true;
-                listKategorie.SetSelected(0, true);
+                textVyhledavacLevy.Enabled = true;
+                textVyhledavacPravy.Enabled = true;
+                listKategorieVlevo.SelectionMode = SelectionMode.One;
+                listKategorieVpravo.SelectionMode = SelectionMode.One;
+                listVeciLevy.SelectionMode = SelectionMode.MultiExtended;
+                listVeciPravy.SelectionMode = SelectionMode.MultiExtended;
+                listRadky.SelectionMode = SelectionMode.MultiExtended;
+                listKategorieVlevo.SetSelected(0, true);
+                listKategorieVpravo.SetSelected(1, true);
             }
             else
             {
@@ -274,61 +299,112 @@ namespace Zbozi
             //        }
             //    }
         }
-        private void listKategorie_SelectedIndexChanged(object sender, EventArgs e)
+        private void listKategorieVlevo_SelectedIndexChanged(object sender, EventArgs e)
         {
-            textVyhledavac.Text = string.Empty;
-            listVeci.BeginUpdate();
-            listVeci.Items.Clear();
+            textVyhledavacLevy.Text = string.Empty;
+            listVeciLevy.BeginUpdate();
+            listVeciLevy.Items.Clear();
             listRadky.Items.Clear();
 
-            if (listKategorie.SelectedItem == "Firmy")
-            {
-                foreach (string firma in programConfig.Firmy)
-                    listVeci.Items.Add(firma);
-            }
-            else if (listKategorie.SelectedItem == "Zboží")
-            {
-                foreach (string popisek in programConfig.popiskyZbozi)
-                    listVeci.Items.Add(popisek);
-            }
-            else
-            {
-                listVeci.Items.Add("Není vybrána žádná kategorie.");
-            }
-            listVeci.EndUpdate();
+            foreach (string vec in programConfig.data[listKategorieVlevo.SelectedItem.ToString()])
+                listVeciLevy.Items.Add(vec);
+
+            listVeciLevy.EndUpdate();
         }
-        private void clickVec(object sender, EventArgs e)
+        private void listKategorieVpravo_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            textVyhledavacPravy.Text = string.Empty;
+            listVeciPravy.BeginUpdate();
+            listVeciPravy.Items.Clear();
+            listRadky.Items.Clear();
+            programConfig.data["Filtrovaná"].Clear();
+            programConfig.radky["Filtrovaná"].Clear();
+            foreach (string vecLevy in listVeciLevy.SelectedItems)
+            {
+                foreach (string vecPravy in programConfig.data[listKategorieVpravo.SelectedItem.ToString()])
+                {
+                    var spolecneRadky = programConfig.radky[listKategorieVlevo.SelectedItem.ToString()][vecLevy]
+                        .Intersect(programConfig.radky[listKategorieVpravo.SelectedItem.ToString()][vecPravy]);
+                    if (spolecneRadky.Any())
+                    {
+                        if (programConfig.data["Filtrovaná"].Add(vecPravy)) programConfig.radky["Filtrovaná"][vecPravy] = new HashSet<int>();
+                        foreach (int cisloRadku in spolecneRadky)
+                        {
+                            programConfig.radky["Filtrovaná"][vecPravy].Add(cisloRadku);
+                        }
+                    }
+                }
+            }
+            programConfig.data["Filtrovaná"] = new HashSet<string>(programConfig.data["Filtrovaná"].OrderBy(v => v));
+            foreach (string vec in programConfig.data["Filtrovaná"])
+            {
+                listVeciPravy.Items.Add(vec);
+            }
+
+            listVeciPravy.EndUpdate();
+        }
+        private void clickVecVlevo(object sender, EventArgs e)
+        {
+            // takhle: kdyz kliknu na neco vlevo, podiva se to na kategorii vpravo a projde to veci v levejch vecich a veci v kategorii vpravo a da to veci ktere jsou na radcich vlevo do praveho seznamu. az na to ze to tam da veci v prave kategorii.
+            // kdyz kliknu na neco vpravo, vezme to ty spolecne radky a veci a da je to do programuConfig.data["Filtrovaná"] a radky do programuConfig.radky["Filtrovaná"] a radky do listRadky
+            if (programConfig.souborNacteny)
+            {
+                listVeciPravy.Items.Clear();
+                listRadky.Items.Clear();
+                programConfig.data["Filtrovaná"].Clear();
+                programConfig.radky["Filtrovaná"].Clear();
+                foreach (string vecLevy in listVeciLevy.SelectedItems)
+                {
+                    foreach (string vecPravy in programConfig.data[listKategorieVpravo.SelectedItem.ToString()])
+                    {
+                        var spolecneRadky = programConfig.radky[listKategorieVlevo.SelectedItem.ToString()][vecLevy]
+                            .Intersect(programConfig.radky[listKategorieVpravo.SelectedItem.ToString()][vecPravy]);
+                        if (spolecneRadky.Any())
+                        {
+                            if (programConfig.data["Filtrovaná"].Add(vecPravy)) programConfig.radky["Filtrovaná"][vecPravy] = new HashSet<int>();
+                            foreach (int cisloRadku in spolecneRadky)
+                            {
+                                programConfig.radky["Filtrovaná"][vecPravy].Add(cisloRadku);
+                            }
+                        }
+                    }
+                }
+                programConfig.data["Filtrovaná"] = new HashSet<string>(programConfig.data["Filtrovaná"].OrderBy(v => v));
+                foreach (string vec in programConfig.data["Filtrovaná"])
+                {
+                    listVeciPravy.Items.Add(vec);
+                }
+            }
+        }
+        private void clickVecVpravo(object sender, EventArgs e)
         {
             if (programConfig.souborNacteny)
             {
                 listRadky.Items.Clear();
-
-                if (listKategorie.SelectedItem.ToString() == "Firmy" || listKategorie.SelectedItem == null)
+                programConfig.data["Filtrovaná"].Clear();
+                programConfig.radky["Filtrovaná"].Clear();
+                foreach (string vecPravy in listVeciPravy.SelectedItems)
                 {
-
-                    foreach (string vec in listVeci.SelectedItems)
+                    if (programConfig.data["Filtrovaná"].Add(vecPravy)) programConfig.radky["Filtrovaná"][vecPravy] = new HashSet<int>();
+                    foreach (int cisloRadku in programConfig.radky[listKategorieVpravo.SelectedItem.ToString()][vecPravy])
                     {
-                        foreach (int cisloRadku in programConfig.radkyFirem[vec])
-                        {
-                            listRadky.Items.Add(cisloRadku);
-                        }
+                        programConfig.radky["Filtrovaná"][vecPravy].Add(cisloRadku);
                     }
                 }
-                else if (listKategorie.SelectedItem.ToString() == "Zboží")
+                HashSet<int> vsechnyRadky = new HashSet<int>();
+                foreach (var radkyVeci in programConfig.radky["Filtrovaná"].Values)
                 {
-                    foreach (string vec in listVeci.SelectedItems)
+                    foreach (int cisloRadku in radkyVeci)
                     {
-                        foreach (int cisloRadku in programConfig.radkyPopisku[vec])
-                        {
-                            listRadky.Items.Add(cisloRadku);
-                        }
+                        vsechnyRadky.Add(cisloRadku);
                     }
                 }
-            }
-            else
-            {
-                listRadky.Items.Clear();
-                foreach (string slovo in "Není naèten žádný soubor!".Split()) listRadky.Items.Add(slovo);
+                int[] radkyPole = vsechnyRadky.ToArray();
+                Array.Sort(radkyPole);
+                foreach (int cisloRadku in radkyPole)
+                {
+                    listRadky.Items.Add(cisloRadku.ToString());
+                }
             }
         }
         private void listRadky_SelectedIndexChanged(object sender, EventArgs e)
@@ -341,32 +417,60 @@ namespace Zbozi
         }
         private void textVyhledavac_TextChanged(object sender, EventArgs e)
         {
-            listVeci.BeginUpdate();
-            listVeci.Items.Clear();
-
-            string hledam = textVyhledavac.Text;
-            if (listKategorie.SelectedItem.ToString() == "Firmy")
+            if (textVyhledavacLevy.Text == "debug")
             {
-                foreach (string firma in programConfig.Firmy)
+                debug debugForm = new debug();
+                debugForm.Show();
+                textVyhledavacLevy.Text = string.Empty;
+                return;
+            }
+            listVeciLevy.BeginUpdate();
+            listVeciPravy.BeginUpdate();
+            listVeciLevy.Items.Clear();
+            listVeciPravy.Items.Clear();
+            listRadky.Items.Clear();
+
+            string hledam = textVyhledavacLevy.Text;
+            if (string.IsNullOrEmpty(hledam))
+                foreach (string vec in programConfig.data[listKategorieVlevo.SelectedItem.ToString()])
                 {
-                    if (firma.Contains(hledam, StringComparison.OrdinalIgnoreCase))
+                    listVeciLevy.Items.Add(vec);
+                }
+            else
+                foreach (string vec in programConfig.data[listKategorieVlevo.SelectedItem.ToString()])
+                {
+                    if (vec.Contains(hledam, StringComparison.OrdinalIgnoreCase))
                     {
-                        listVeci.Items.Add(firma);
+                        listVeciLevy.Items.Add(vec);
                     }
                 }
-            }
-            else if (listKategorie.SelectedItem.ToString() == "Zboží")
-            {
-                foreach (string popisek in programConfig.popiskyZbozi)
+
+            listVeciLevy.EndUpdate();
+            listVeciPravy.EndUpdate();
+        }
+
+        private void textVyhledavacPravy_TextChanged(object sender, EventArgs e)
+        {
+            listVeciPravy.BeginUpdate();
+            listVeciPravy.Items.Clear();
+            listRadky.Items.Clear();
+
+            string hledam = textVyhledavacPravy.Text;
+            if (string.IsNullOrEmpty(hledam))
+                foreach (string vec in programConfig.data["Filtrovaná"])
                 {
-                    if (popisek.Contains(hledam, StringComparison.OrdinalIgnoreCase))
+                    listVeciPravy.Items.Add(vec);
+                }
+            else 
+                foreach (string vec in programConfig.data["Filtrovaná"])
+                {
+                    if (vec.Contains(hledam, StringComparison.OrdinalIgnoreCase))
                     {
-                        listVeci.Items.Add(popisek);
+                        listVeciPravy.Items.Add(vec);
                     }
                 }
-            }
 
-            listVeci.EndUpdate();
+            listVeciPravy.EndUpdate();
         }
     }
 }
