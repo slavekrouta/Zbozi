@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(zobrazeniRadku));
             tabulka = new DataGridView();
             ok = new Button();
             ulozit = new Button();
@@ -78,9 +79,10 @@
             Controls.Add(ulozit);
             Controls.Add(ok);
             Controls.Add(tabulka);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MinimumSize = new Size(700, 200);
             Name = "zobrazeniRadku";
-            Text = "zobrazeniRadku";
+            Text = "Zobrazení tabulky";
             Load += zobrazeniRadku_Load;
             ((System.ComponentModel.ISupportInitialize)tabulka).EndInit();
             ResumeLayout(false);

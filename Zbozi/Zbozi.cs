@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace Zbozi
 {
-    public partial class Form1 : Form
+    public partial class Zbozi : Form
     {
-        public Form1()
+        public Zbozi()
         {
             InitializeComponent();
         }

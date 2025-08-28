@@ -6,8 +6,10 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO.Compression;
+using System.IO;
 using System.Windows.Forms;
-using static Zbozi.Form1;
+using static Zbozi.Zbozi;
 
 namespace Zbozi
 {
@@ -20,28 +22,68 @@ namespace Zbozi
 
         private void debug_Load(object sender, EventArgs e)
         {
-            vyskladneno.Text = Form1.programConfig.vyskladneno.ToString();
-            radek.Text = Form1.programConfig.stranka.Column(1).LastCellUsed().Address.RowNumber.ToString();
-            radky.Text = Form1.programConfig.radkyPocet.ToString();
-            cntfirmy.Text = Form1.programConfig.data["Firmy"].Count.ToString();
-            cntzbozi.Text = Form1.programConfig.data["Zboží"].Count.ToString();
-            cntkody.Text = Form1.programConfig.data["Objednací čísla"].Count.ToString();
-            path.Text = Form1.programConfig.souborPath;
+            vyskladneno.Text = Zbozi.programConfig.vyskladneno.ToString();
+            posledniradek.Text = Zbozi.programConfig.stranka.Column(1).LastCellUsed().Address.RowNumber.ToString();
+            radky.Text = Zbozi.programConfig.radkyPocet.ToString();
+            pocetfirmy.Text = Zbozi.programConfig.data["Firmy"].Count.ToString();
+            pocetzbozi.Text = Zbozi.programConfig.data["Zboží"].Count.ToString();
+            pocetkody.Text = Zbozi.programConfig.data["Objednací čísla"].Count.ToString();
+            path.Text = Zbozi.programConfig.souborPath;
 
             firmy.BeginUpdate();
             zbozi.BeginUpdate();
             kody.BeginUpdate();
-            foreach (string firma in Form1.programConfig.data["Firmy"]) firmy.Items.Add(firma);
-            foreach (string zboz in Form1.programConfig.data["Zboží"]) zbozi.Items.Add(zboz);
-            foreach (string kod in Form1.programConfig.data["Objednací čísla"]) kody.Items.Add(kod);
+            foreach (string firma in Zbozi.programConfig.data["Firmy"]) firmy.Items.Add(firma);
+            foreach (string zboz in Zbozi.programConfig.data["Zboží"]) zbozi.Items.Add(zboz);
+            foreach (string kod in Zbozi.programConfig.data["Objednací čísla"]) kody.Items.Add(kod);
             firmy.EndUpdate();
             zbozi.EndUpdate();
             kody.EndUpdate();
         }
-
+        private string folderPath;
         private void button1_Click(object sender, EventArgs e)
         {
-            
+            using (FolderBrowserDialog fbd = new FolderBrowserDialog())
+            {
+                fbd.Description = "Vyberte složku pro uložení dat";
+                fbd.ShowNewFolderButton = true;
+                if (fbd.ShowDialog() == DialogResult.OK)
+                {
+                    progressBar1.Visible = true;
+
+                    string soubor = string.Empty;
+                    folderPath = fbd.SelectedPath + "\\zbozidebug";
+                    System.IO.Directory.CreateDirectory(folderPath);
+                    foreach (var seznam in this.Controls.OfType<ListBox>())
+                    {
+                        soubor = string.Empty;
+                        foreach (var vec in seznam.Items) soubor += vec.ToString() + Environment.NewLine;
+                        File.WriteAllText(folderPath + "\\" + seznam.Name + ".txt", soubor);
+                        progressBar1.PerformStep();
+                    }
+
+                    Label[] popisky = [radky, vyskladneno, posledniradek, pocetfirmy, pocetzbozi, pocetkody, path];
+                    soubor = string.Empty;
+
+                    foreach (var popisek in popisky)
+                    {
+                        soubor += popisek.Name + ": " + popisek.Text + Environment.NewLine;
+                        progressBar1.PerformStep();
+                    }
+                    File.WriteAllText(folderPath + "\\popisky.txt", soubor);
+                    soubor = string.Empty;
+
+                    File.Copy(Zbozi.programConfig.souborPath, folderPath + "\\" + Zbozi.programConfig.souborName);
+                    progressBar1.PerformStep();
+
+                    ZipFile.CreateFromDirectory(folderPath, folderPath + ".zip");
+                    progressBar1.PerformStep();
+
+                    MessageBox.Show("Uloženo", "Hotovo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    progressBar1.Visible = false;
+                }
+            }
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)

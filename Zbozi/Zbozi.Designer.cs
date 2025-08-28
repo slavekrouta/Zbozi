@@ -1,6 +1,6 @@
 ﻿namespace Zbozi
 {
-    partial class Form1
+    partial class Zbozi
     {
         /// <summary>
         ///  Required designer variable.
@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Zbozi));
             buttonSoubor = new Button();
             labelSoubor = new Label();
             panel1 = new Panel();
@@ -359,16 +360,17 @@
             buttonZobrazit.UseVisualStyleBackColor = true;
             buttonZobrazit.Click += buttonZobrazit_Click;
             // 
-            // Form1
+            // Zbozi
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(394, 211);
             Controls.Add(splitContainer1);
             Controls.Add(panel1);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MinimumSize = new Size(410, 250);
-            Name = "Form1";
-            Text = "Form1";
+            Name = "Zbozi";
+            Text = "Zboží";
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
             splitContainer1.Panel1.ResumeLayout(false);

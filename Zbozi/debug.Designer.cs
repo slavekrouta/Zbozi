@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(debug));
             label1 = new Label();
             firmy = new ListBox();
             label2 = new Label();
@@ -43,15 +44,16 @@
             label6 = new Label();
             path = new Label();
             label8 = new Label();
-            cntfirmy = new Label();
+            pocetfirmy = new Label();
             label10 = new Label();
-            cntzbozi = new Label();
+            pocetzbozi = new Label();
             label12 = new Label();
-            cntkody = new Label();
+            pocetkody = new Label();
             label5 = new Label();
-            radek = new Label();
+            posledniradek = new Label();
             label7 = new Label();
             vyskladneno = new Label();
+            progressBar1 = new ProgressBar();
             SuspendLayout();
             // 
             // label1
@@ -70,7 +72,7 @@
             firmy.ItemHeight = 15;
             firmy.Location = new Point(12, 57);
             firmy.Name = "firmy";
-            firmy.Size = new Size(122, 379);
+            firmy.Size = new Size(122, 169);
             firmy.TabIndex = 1;
             // 
             // label2
@@ -89,7 +91,7 @@
             zbozi.ItemHeight = 15;
             zbozi.Location = new Point(140, 57);
             zbozi.Name = "zbozi";
-            zbozi.Size = new Size(122, 379);
+            zbozi.Size = new Size(122, 169);
             zbozi.TabIndex = 1;
             // 
             // label3
@@ -108,7 +110,7 @@
             kody.ItemHeight = 15;
             kody.Location = new Point(268, 57);
             kody.Name = "kody";
-            kody.Size = new Size(122, 379);
+            kody.Size = new Size(122, 169);
             kody.TabIndex = 1;
             // 
             // label4
@@ -123,7 +125,7 @@
             // button1
             // 
             button1.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            button1.Location = new Point(713, 413);
+            button1.Location = new Point(559, 205);
             button1.Name = "button1";
             button1.Size = new Size(75, 23);
             button1.TabIndex = 2;
@@ -162,6 +164,7 @@
             radky.Name = "radky";
             radky.Size = new Size(37, 15);
             radky.TabIndex = 0;
+            radky.Tag = "poctydata";
             radky.Text = "pocet";
             // 
             // label6
@@ -180,6 +183,7 @@
             path.Name = "path";
             path.Size = new Size(31, 15);
             path.TabIndex = 0;
+            path.Tag = "poctydata";
             path.Text = "path";
             // 
             // label8
@@ -191,14 +195,15 @@
             label8.TabIndex = 0;
             label8.Text = "pocet firem:";
             // 
-            // cntfirmy
+            // pocetfirmy
             // 
-            cntfirmy.AutoSize = true;
-            cntfirmy.Location = new Point(541, 102);
-            cntfirmy.Name = "cntfirmy";
-            cntfirmy.Size = new Size(37, 15);
-            cntfirmy.TabIndex = 0;
-            cntfirmy.Text = "pocet";
+            pocetfirmy.AutoSize = true;
+            pocetfirmy.Location = new Point(541, 102);
+            pocetfirmy.Name = "pocetfirmy";
+            pocetfirmy.Size = new Size(37, 15);
+            pocetfirmy.TabIndex = 0;
+            pocetfirmy.Tag = "poctydata";
+            pocetfirmy.Text = "pocet";
             // 
             // label10
             // 
@@ -209,14 +214,15 @@
             label10.TabIndex = 0;
             label10.Text = "pocet zbozi:";
             // 
-            // cntzbozi
+            // pocetzbozi
             // 
-            cntzbozi.AutoSize = true;
-            cntzbozi.Location = new Point(541, 117);
-            cntzbozi.Name = "cntzbozi";
-            cntzbozi.Size = new Size(37, 15);
-            cntzbozi.TabIndex = 0;
-            cntzbozi.Text = "pocet";
+            pocetzbozi.AutoSize = true;
+            pocetzbozi.Location = new Point(541, 117);
+            pocetzbozi.Name = "pocetzbozi";
+            pocetzbozi.Size = new Size(37, 15);
+            pocetzbozi.TabIndex = 0;
+            pocetzbozi.Tag = "poctydata";
+            pocetzbozi.Text = "pocet";
             // 
             // label12
             // 
@@ -227,14 +233,15 @@
             label12.TabIndex = 0;
             label12.Text = "pocet kodu:";
             // 
-            // cntkody
+            // pocetkody
             // 
-            cntkody.AutoSize = true;
-            cntkody.Location = new Point(541, 132);
-            cntkody.Name = "cntkody";
-            cntkody.Size = new Size(37, 15);
-            cntkody.TabIndex = 0;
-            cntkody.Text = "pocet";
+            pocetkody.AutoSize = true;
+            pocetkody.Location = new Point(541, 132);
+            pocetkody.Name = "pocetkody";
+            pocetkody.Size = new Size(37, 15);
+            pocetkody.TabIndex = 0;
+            pocetkody.Tag = "poctydata";
+            pocetkody.Text = "pocet";
             // 
             // label5
             // 
@@ -245,14 +252,15 @@
             label5.TabIndex = 0;
             label5.Text = "posledni radek:";
             // 
-            // radek
+            // posledniradek
             // 
-            radek.AutoSize = true;
-            radek.Location = new Point(541, 87);
-            radek.Name = "radek";
-            radek.Size = new Size(31, 15);
-            radek.TabIndex = 0;
-            radek.Text = "cislo";
+            posledniradek.AutoSize = true;
+            posledniradek.Location = new Point(541, 87);
+            posledniradek.Name = "posledniradek";
+            posledniradek.Size = new Size(31, 15);
+            posledniradek.TabIndex = 0;
+            posledniradek.Tag = "poctydata";
+            posledniradek.Text = "cislo";
             // 
             // label7
             // 
@@ -270,13 +278,26 @@
             vyskladneno.Name = "vyskladneno";
             vyskladneno.Size = new Size(37, 15);
             vyskladneno.TabIndex = 0;
+            vyskladneno.Tag = "poctydata";
             vyskladneno.Text = "pocet";
+            // 
+            // progressBar1
+            // 
+            progressBar1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            progressBar1.Location = new Point(404, 205);
+            progressBar1.Maximum = 12;
+            progressBar1.Name = "progressBar1";
+            progressBar1.Size = new Size(144, 23);
+            progressBar1.Step = 1;
+            progressBar1.TabIndex = 4;
+            progressBar1.Visible = false;
             // 
             // debug
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(646, 242);
+            Controls.Add(progressBar1);
             Controls.Add(textBox3);
             Controls.Add(textBox2);
             Controls.Add(textBox1);
@@ -286,10 +307,10 @@
             Controls.Add(zbozi);
             Controls.Add(label2);
             Controls.Add(path);
-            Controls.Add(cntkody);
-            Controls.Add(cntzbozi);
-            Controls.Add(cntfirmy);
-            Controls.Add(radek);
+            Controls.Add(pocetkody);
+            Controls.Add(pocetzbozi);
+            Controls.Add(pocetfirmy);
+            Controls.Add(posledniradek);
             Controls.Add(vyskladneno);
             Controls.Add(radky);
             Controls.Add(label6);
@@ -301,6 +322,8 @@
             Controls.Add(label4);
             Controls.Add(firmy);
             Controls.Add(label1);
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            MinimumSize = new Size(662, 281);
             Name = "debug";
             Text = "debug";
             Load += debug_Load;
@@ -325,14 +348,15 @@
         private Label label6;
         private Label path;
         private Label label8;
-        private Label cntfirmy;
+        private Label pocetfirmy;
         private Label label10;
-        private Label cntzbozi;
+        private Label pocetzbozi;
         private Label label12;
-        private Label cntkody;
+        private Label pocetkody;
         private Label label5;
-        private Label radek;
+        private Label posledniradek;
         private Label label7;
         private Label vyskladneno;
+        private ProgressBar progressBar1;
     }
 }

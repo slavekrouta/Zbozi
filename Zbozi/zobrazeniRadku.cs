@@ -36,15 +36,15 @@ namespace Zbozi
             tabulka.Columns.Add("cisloradku", "Číslo řádku");
 
             // Add the rest of the columns from the worksheet
-            for (int col = 1; col <= Form1.programConfig.stranka.LastColumnUsed().ColumnNumber(); col++)
+            for (int col = 1; col <= Zbozi.programConfig.stranka.LastColumnUsed().ColumnNumber(); col++)
             {
-                string zahlavi = Form1.programConfig.stranka.Cell(1, col).Value.ToString();
-                tabulka.Columns.Add(Form1.programConfig.stranka.Cell(1, col).Address.ToString(), zahlavi);
+                string zahlavi = Zbozi.programConfig.stranka.Cell(1, col).Value.ToString();
+                tabulka.Columns.Add(Zbozi.programConfig.stranka.Cell(1, col).Address.ToString(), zahlavi);
             }
 
             foreach (int radekKZobrazeni in radkyKZobrazeni)
             {
-                var radek = Form1.programConfig.stranka.Row(radekKZobrazeni);
+                var radek = Zbozi.programConfig.stranka.Row(radekKZobrazeni);
                 var gridRadek = new DataGridViewRow();
 
                 var bunkaCIsloRadku = new DataGridViewTextBoxCell();
@@ -52,7 +52,7 @@ namespace Zbozi
                 gridRadek.Cells.Add(bunkaCIsloRadku);
 
 
-                for (int col = 1; col <= Form1.programConfig.stranka.LastColumnUsed().ColumnNumber(); col++)
+                for (int col = 1; col <= Zbozi.programConfig.stranka.LastColumnUsed().ColumnNumber(); col++)
                 {
                     var bunka = radek.Cell(col);
                     var gridBunka = new DataGridViewTextBoxCell();
